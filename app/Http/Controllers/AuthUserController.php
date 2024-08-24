@@ -7,6 +7,7 @@ use App\Http\Requests\RegisterUserRequest;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class AuthUserController extends Controller
@@ -35,7 +36,7 @@ class AuthUserController extends Controller
         }
     }
 
-    public function login(LoginUserRequest $request)
+    public function login(LoginUserRequest $request): JsonResponse
     {
         try {
             $user = User::query()->where('email', $request->email)->first();
@@ -60,6 +61,23 @@ class AuthUserController extends Controller
                     'message' => 'This email is not register.',
                 ], 403);
             }
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'faild',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function logout()
+    {
+        try {
+            $id =  Auth::user()->id;
+            User::find($id)->tokens()->delete();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'User is logged out Successfully'
+            ], 200);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'faild',
