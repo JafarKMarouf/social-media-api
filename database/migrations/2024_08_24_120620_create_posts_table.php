@@ -17,7 +17,7 @@ return new class extends Migration
                 ->constrained('users')
                 ->cascadeOnDelete()
                 ->cascadeOnUpdate();
-            $table->text('post');
+            $table->text('post_body');
             $table->string('image')->nullable();
             $table->timestamps();
         });

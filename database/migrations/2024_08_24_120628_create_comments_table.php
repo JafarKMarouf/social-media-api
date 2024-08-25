@@ -21,7 +21,7 @@ return new class extends Migration
                 ->constrained('posts')
                 ->cascadeOnUpdate()
                 ->cascadeOnDelete();
-            $table->string('comment');
+            $table->string('comment_body');
             $table->timestamps();
         });
     }
