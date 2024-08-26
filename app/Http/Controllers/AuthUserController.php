@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginUserRequest;
 use App\Http\Requests\RegisterUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\JsonResponse;
@@ -77,6 +78,50 @@ class AuthUserController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'User is logged out Successfully'
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'faild',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function user()
+    {
+        try {
+            return response()->json([
+                'user' => Auth::user()
+            ], 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'faild',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function update(UpdateUserRequest $request)
+    {
+        try {
+            $username = Auth::user()->name;
+
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = time() . $username . '.' . $image->getClientOriginalExtension();
+                $imageUrl = $this->uploadImage($image, $imageName);
+            }
+            $user_id = Auth::user()->id;
+            $user = User::find($user_id);
+
+            $user->update([
+                'name' => $request->name ?? $user->name,
+                'image' => $imageUrl ?? $user->image,
+            ]);
+            return response()->json([
+                'status' => 'success',
+                'data' => $user,
+                'message' => 'User Updated Successfully'
             ], 200);
         } catch (Exception $e) {
             return response()->json([

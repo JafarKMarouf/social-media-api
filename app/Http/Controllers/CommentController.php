@@ -71,7 +71,7 @@ class CommentController extends Controller
                 'data' => $comment,
                 'message' => 'Comments fetched Successfully'
 
-            ], 200);
+            ], 201);
         } catch (Exception $e) {
             return response()->json([
                 'status' => 'faild',

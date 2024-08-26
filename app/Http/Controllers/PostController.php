@@ -38,24 +38,21 @@ class PostController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(StorePostRequest $request): JsonResponse
     {
         try {
             $user_id = Auth::user()->id;
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = time() . 'post' . '.' . $image->getClientOriginalExtension();
+                $imageUrl = $this->uploadImage($image, $imageName);
+            }
             $post = Post::create([
                 'user_id' => $user_id,
                 'post_body' => $request->post_body,
-                'image' => $request->image,
+                'image' => $imageUrl ?? $request->image,
             ]);
             return response()->json([
                 'status' => 'success',
@@ -104,21 +101,13 @@ class PostController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Post $post)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
-    public function update(UpdatePostRequest $request, $id)
+    public function update(UpdatePostRequest $request, $post_id)
     {
 
         try {
-            $post = Post::find($id);
+            $post = Post::find($post_id);
             if (!$post) {
                 return response()->json([
                     'status' => 'failed',
@@ -132,10 +121,14 @@ class PostController extends Controller
                     'message' => 'Permission deined',
                 ], 403);
             }
-
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $imageName = time() . 'post' . '.' . $image->getClientOriginalExtension();
+                $imageUrl = $this->uploadImage($image, $imageName);
+            }
             $post->update([
                 'post_body' => $request->post_body ?? $post->post_body,
-                'image' => $request->image ?? $post->image,
+                'image' => $imageUrl ?? $post->image,
             ]);
 
             return response()->json([
