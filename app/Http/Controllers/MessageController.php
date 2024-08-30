@@ -2,18 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NewMessageSent;
 use App\Http\Requests\GetMessageRequest;
 use App\Http\Requests\StoreMessageRequest;
 use App\Models\ChatMessage;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MessageController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Get Messages for specific chat
+     * @param \App\Http\Requests\GetMessageRequest $request
+     * @return mixed|\Illuminate\Http\JsonResponse
      */
-    public function index(GetMessageRequest $request)
+    public function index(GetMessageRequest $request): JsonResponse
     {
         $data = $request->validated();
 
@@ -37,13 +41,16 @@ class MessageController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store message in chat room
+     * @param \App\Http\Requests\StoreMessageRequest $request
+     * @return mixed|\Illuminate\Http\JsonResponse
      */
-    public function store(StoreMessageRequest $request)
+    public function store(StoreMessageRequest $request): JsonResponse
     {
         $data = $request->validated();
         $data['user_id'] = Auth::user()->id;
         $message = ChatMessage::create($data);
+        $this->sentNotificationToOther($message->load('user'));
         return response()->json([
             'data' => $message->load('user'),
             'status' => 'sucess',
@@ -51,11 +58,9 @@ class MessageController extends Controller
         ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    private function sentNotificationToOther(ChatMessage $chatMessage)
     {
-        //
+        $chatId = $chatMessage->chat_id;
+        broadcast(new NewMessageSent($chatMessage))->toOthers();
     }
 }

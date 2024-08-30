@@ -6,6 +6,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -14,8 +15,8 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('auth')
     ->as('auth.')
     ->group(function () {
-        // Route::get('/', [AuthUserController::class, 'user'])->name('user.userDetails');
-        // Route::post('/update', [AuthUserController::class, 'update'])->name('user.updateProfile');
+        Route::get('/', [AuthUserController::class, 'user'])->name('user.userDetails');
+        Route::post('/update', [AuthUserController::class, 'update'])->name('user.updateProfile');
 
         Route::post('register', [AuthUserController::class, 'register'])
             ->name('register');
@@ -44,4 +45,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::apiResource('message', MessageController::class)
         ->middleware('auth:sanctum');
+
+    Route::get('users', [UserController::class, 'index']);
 });
